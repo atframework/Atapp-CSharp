@@ -5,7 +5,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 
 namespace atframe.atapp {
-    class App {
+    public class App {
         public enum ATBUS_ERROR_TYPE  {
             EN_ATBUS_ERR_SUCCESS = 0,
 
@@ -70,7 +70,7 @@ namespace atframe.atapp {
         private Dictionary<IntPtr, Module> _all_modules = new Dictionary<IntPtr, Module>();
         private IntPtr _native_app = IntPtr.Zero;
 
-        App() {
+        public App() {
             _native_app = libatapp_c_create();
             if (IntPtr.Zero == _native_app) {
                 throw new System.OutOfMemoryException("Can not create native atgateway inner protocol v1 object");
@@ -492,13 +492,15 @@ namespace atframe.atapp {
         [DllImport(Message.LIBNAME, CallingConvention = CallingConvention.Cdecl)]
         private static extern ulong libatapp_c_get_id(IntPtr context);
         [DllImport(Message.LIBNAME, CallingConvention = CallingConvention.Cdecl)]
-        private static extern string libatapp_c_get_app_version(IntPtr context);
+        private static extern void libatapp_c_get_app_version(IntPtr context, out IntPtr verbuf, out ulong versz);
 
         // =========================== configures ===========================
         [DllImport(Message.LIBNAME, CallingConvention = CallingConvention.Cdecl)]
-        private static extern ulong  libatapp_c_get_configure_size(IntPtr context, string path);
+        private static extern ulong libatapp_c_get_configure_size(IntPtr context, string path);
         [DllImport(Message.LIBNAME, CallingConvention = CallingConvention.Cdecl)]
-        private static extern ulong  libatapp_c_get_configure(IntPtr context, string path, out string[] out_buf, out ulong[] out_len, ulong arr_sz);
+        private static extern ulong libatapp_c_get_configure(IntPtr context, string path, 
+            [MarshalAs(UnmanagedType.LPArray)] IntPtr[] out_buf, 
+            [MarshalAs(UnmanagedType.LPArray)] ulong[] out_len, ulong arr_sz);
 
         // =========================== flags ===========================
         [DllImport(Message.LIBNAME, CallingConvention = CallingConvention.Cdecl)]
@@ -591,7 +593,15 @@ namespace atframe.atapp {
                     return "";
                 }
 
-                return libatapp_c_get_app_version(_native_app);
+                IntPtr verbuf;
+                ulong bufsz;
+
+                libatapp_c_get_app_version(_native_app, out verbuf, out bufsz);
+                if (IntPtr.Zero == verbuf) {
+                    return "";
+                }
+
+                return Marshal.PtrToStringAnsi(verbuf, (int)bufsz);
             }
         }
 
@@ -601,14 +611,18 @@ namespace atframe.atapp {
             }
 
             ulong sz = libatapp_c_get_configure_size(_native_app, path);
-            string[] ret;
-            ulong[] ret_sz;
-            libatapp_c_get_configure(_native_app, path, out ret, out ret_sz, sz);
+            IntPtr[] cfgbuf = new IntPtr[sz];
+            ulong[] cfgsz = new ulong[sz];
+            sz = libatapp_c_get_configure(_native_app, path, cfgbuf, cfgsz, sz);
 
+            string[] ret = new string[sz];
+            for (ulong i = 0; i < sz; ++i) {
+                ret[i] = Marshal.PtrToStringAnsi(cfgbuf[i], (int)cfgsz[i]);
+            }
             return ret;
         }
 
-        bool IsRunning {
+        public bool IsRunning {
             get {
                 if (IntPtr.Zero == _native_app) {
                     return false;
@@ -618,7 +632,7 @@ namespace atframe.atapp {
             }
         }
 
-        bool IsStoping {
+        public bool IsStoping {
             get {
                 if (IntPtr.Zero == _native_app) {
                     return false;
@@ -628,7 +642,7 @@ namespace atframe.atapp {
             }
         }
 
-        bool IsTimeout {
+        public bool IsTimeout {
             get {
                 if (IntPtr.Zero == _native_app) {
                     return false;

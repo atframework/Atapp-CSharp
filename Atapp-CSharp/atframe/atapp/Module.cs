@@ -5,7 +5,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 
 namespace atframe.atapp {
-    class Module {
+    public class Module {
         private IntPtr _native_module = IntPtr.Zero;
         public IntPtr NativeModule {
             get {
@@ -13,7 +13,7 @@ namespace atframe.atapp {
             }
         }
 
-        private Module() {}
+        protected Module() {}
 
         static public T Create<T>(IntPtr app_native) where T : Module, new() {
             if (IntPtr.Zero == app_native) {
@@ -67,7 +67,7 @@ namespace atframe.atapp {
         /// <param name="mod"></param>
         /// <returns></returns>
         [DllImport(Message.LIBNAME, CallingConvention = CallingConvention.Cdecl)]
-        private static extern string libatapp_c_module_get_name(IntPtr mod);
+        private static extern void libatapp_c_module_get_name(IntPtr mod, out IntPtr namebuf, out ulong versz);
 
         /// <summary>
         /// get module app context
@@ -134,7 +134,15 @@ namespace atframe.atapp {
                     return "";
                 }
 
-                return libatapp_c_module_get_name(_native_module);
+                IntPtr namebuf;
+                ulong bufsz;
+
+                libatapp_c_module_get_name(_native_module, out namebuf, out bufsz);
+                if (IntPtr.Zero == namebuf) {
+                    return "";
+                }
+
+                return Marshal.PtrToStringAnsi(namebuf, (int)bufsz);
             }
         }
 

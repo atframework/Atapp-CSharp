@@ -8,7 +8,7 @@ namespace atframe.atapp {
     /// <summary>
     /// 维护消息结构，这个类型只被App内部创建
     /// </summary>
-    class Message {
+    public class Message {
         public enum ATBUS_CMD {
             INVALID = 0,
             // 数据协议
@@ -46,7 +46,7 @@ namespace atframe.atapp {
 #if !UNITY_EDITOR && UNITY_IPHONE
         public const string LIBNAME = "__Internal";
 #else
-        public const string LIBNAME = "libatapp_c";
+        public const string LIBNAME = "atapp_c";
 #endif
 
         #region import from dll setter

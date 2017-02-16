@@ -20,9 +20,7 @@ namespace AtappSimpleTest {
         };
 
         static void log(LOG_LEVEL level, string content) {
-            StackTrace trace = new StackTrace(true);
-            StackFrame[] frames = trace.GetFrames();
-            App.WriteLog(0, (uint)level, level.ToString(), frames[1].GetFileName(), frames[1].GetMethod().Name, (uint)frames[1].GetFileLineNumber(), content);
+            App.WriteLog(0, (uint)level, level.ToString(), "DotNetCore", "", 0, content);
         }
 
         class AtappSimpleTestModule : Module {

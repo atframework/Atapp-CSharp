@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "exports": {
+    "Atapp-CSharp/1.0.0": {
+      "type": "project",
+      "framework": ".NETStandard,Version=v1.3",
+      "compile": {
+        "bin/Debug/Atapp-CSharp.dll": {}
+      },
+      "runtime": {
+        "bin/Debug/Atapp-CSharp.dll": {}
+      },
+      "contentFiles": {
+        "bin/Debug/Atapp-CSharp.pdb": {
+          "buildAction": "None",
+          "codeLanguage": "any",
+          "copyToOutput": true
+        }
+      }
+    }
+  }
+}

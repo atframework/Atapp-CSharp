@@ -159,9 +159,9 @@ namespace atframe.atapp {
         [DllImport(Message.LIBNAME, CallingConvention = CallingConvention.Cdecl)]
         private static extern void libatapp_c_set_on_all_module_inited_fn(IntPtr context, IntPtr fn, IntPtr priv_data);
         [DllImport(Message.LIBNAME, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void libatapp_c_add_cmd(IntPtr context, string cmd, IntPtr fn, IntPtr priv_data);
+        private static extern void libatapp_c_add_cmd(IntPtr context, string cmd, IntPtr fn, byte[] help_msg, IntPtr priv_data);
         [DllImport(Message.LIBNAME, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void libatapp_c_add_option(IntPtr context, string key, IntPtr fn, string help_msg, IntPtr priv_data);
+        private static extern void libatapp_c_add_option(IntPtr context, string key, IntPtr fn, byte[] help_msg, IntPtr priv_data);
 
         #endregion
 
@@ -397,7 +397,7 @@ namespace atframe.atapp {
 
         private Dictionary<IntPtr, OnCommandOptionFunction> _all_cmd_fn = new Dictionary<IntPtr, OnCommandOptionFunction>();
         private Dictionary<IntPtr, libatapp_c_on_cmd_option_fn_t> _all_cmd_holder = new Dictionary<IntPtr, libatapp_c_on_cmd_option_fn_t>();
-        public void AddCustomCommand(string cmd, OnCommandOptionFunction val) {
+        public void AddCustomCommand(string cmd, OnCommandOptionFunction val, string help_msg) {
             if (IntPtr.Zero == _native_app) {
                 throw new InvalidOperationException("native object invalid");
             }
@@ -411,7 +411,11 @@ namespace atframe.atapp {
             _all_cmd_fn.Add(fn, val);
             _all_cmd_holder.Add(fn, holder);
 
-            libatapp_c_add_cmd(_native_app, cmd, fn, fn);
+            if (null != help_msg && help_msg.Length > 0) {
+                libatapp_c_add_cmd(_native_app, cmd, fn, System.Text.Encoding.UTF8.GetBytes(help_msg), fn);
+            } else {
+                libatapp_c_add_cmd(_native_app, cmd, fn, null, fn);
+            }
         }
 
         static private int libatapp_c_on_option_fn(IntPtr app, IntPtr buffer, IntPtr buffer_len, ulong sz, IntPtr priv_data) {
@@ -457,7 +461,11 @@ namespace atframe.atapp {
             _all_option_fn.Add(fn, val);
             _all_option_holder.Add(fn, holder);
 
-            libatapp_c_add_option(_native_app, opt, fn, help_msg, fn);
+            if (null != help_msg && help_msg.Length > 0) {
+                libatapp_c_add_option(_native_app, opt, fn, System.Text.Encoding.UTF8.GetBytes(help_msg), fn);
+            } else {
+                libatapp_c_add_option(_native_app, opt, fn, null, fn);
+            }
         }
         #endregion
 
@@ -543,6 +551,9 @@ namespace atframe.atapp {
 
         [DllImport(Message.LIBNAME, CallingConvention = CallingConvention.Cdecl)]
         private static extern int libatapp_c_log_check_level(uint tag, uint level);
+
+        [DllImport(Message.LIBNAME, CallingConvention = CallingConvention.Cdecl)]
+        private static extern void libatapp_c_log_set_project_directory(string project_dir, ulong dirsz);
         #endregion
 
         public int Run(string[] args) {
@@ -722,6 +733,10 @@ namespace atframe.atapp {
         static public void WriteLog(uint tag, uint level, string level_name,
             string file_path, string func_name, uint line_number, string log_content) {
             libatapp_c_log_write(tag, level, level_name, file_path, func_name, line_number, log_content);
+        }
+
+        static public void SetLogProjectDirctory(string project_dir) {
+            libatapp_c_log_set_project_directory(project_dir, (ulong)project_dir.Length);
         }
     }
 }

@@ -25,7 +25,7 @@ namespace AtappSimpleTest {
 
         class AtappSimpleTestModule : Module {
             static public int Init(Module self) {
-                log(LOG_LEVEL.INFO, "AppID=" + self.Application.AppID + " " + self.Name + " init, version: " + self.Application.AppVersion);
+                log(LOG_LEVEL.INFO, "AppID=" + self.Application.AppID + " " + self.Name + " init, Version: " + self.Application.AppVersion);
                 return 0;
             }
 

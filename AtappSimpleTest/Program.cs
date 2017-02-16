@@ -27,7 +27,7 @@ namespace AtappSimpleTest {
 
         class AtappSimpleTestModule : Module {
             static public int Init(Module self) {
-                log(LOG_LEVEL.INFO, "AppID=" + self.Application.AppID + " " + self.Name + " init, version: " + self.Application.AppVersion);
+                log(LOG_LEVEL.INFO, "AppID=" + self.Application.AppID + " " + self.Name + " init, Version: " + self.Application.AppVersion);
                 return 0;
             }
 
@@ -161,6 +161,18 @@ namespace AtappSimpleTest {
         }
 
         static void Main(string[] args) {
+            // setup project dirctory
+            {
+                StackTrace trace = new StackTrace(true);
+                StackFrame[] frames = trace.GetFrames();
+                if (null != frames && frames.Length > 0) {
+                    string file_name = frames[0].GetFileName();
+                    System.IO.DirectoryInfo dir = System.IO.Directory.GetParent(file_name);
+                    file_name = dir.Parent.FullName;
+                    App.SetLogProjectDirctory(file_name);
+                }
+            }
+
             // setup module
             Module mod = app.CreateModule<AtappSimpleTestModule>();
             mod.OnInit = AtappSimpleTestModule.Init;
